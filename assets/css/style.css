@@ -86,8 +86,7 @@ main, footer { position: relative; z-index: 2; }
 .mono, .eyebrow {
   font-family: var(--f-mono); font-size: 11px; letter-spacing: .16em; text-transform: uppercase;
 }
-.eyebrow { display: inline-flex; align-items: center; gap: 12px; opacity: .78; }
-.eyebrow::before { content: ""; width: 34px; height: 1px; background: currentColor; opacity: .6; }
+.eyebrow { display: inline-flex; align-items: center; opacity: .78; }
 .serif { font-family: var(--f-serif); font-weight: 400; }
 em { font-family: var(--f-serif); font-style: italic; font-weight: 400; }
 h1 em, h2 em, .grad {
