@@ -1,0 +1,17 @@
+{
+  "name": "Cynerva Healthcare",
+  "short_name": "Cynerva",
+  "description": "Cynerva Healthcare Pvt. Ltd. is a specialised API manufacturer developing niche, differentiated active pharmaceutical ingredients for global markets.",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#f4f6fc",
+  "theme_color": "#f4f6fc",
+  "icons": [
+    {
+      "src": "assets/img/favicon.png",
+      "sizes": "64x64",
+      "type": "image/png"
+    }
+  ]
+}
