@@ -406,6 +406,33 @@
     panels.forEach((p) => p.classList.add('is-seen'));
   }
 
+  // click-and-drag support: without this, a mouse "swipe" just selects the text
+  (function enableDragScroll() {
+    let dragging = false, startX = 0, startScroll = 0, moved = false;
+    const down = (e) => {
+      if (e.pointerType === 'touch') return; // touch already scrolls natively
+      dragging = true; moved = false;
+      startX = e.clientX; startScroll = track.scrollLeft;
+      track.classList.add('is-dragging');
+      if (track.setPointerCapture) track.setPointerCapture(e.pointerId);
+    };
+    const move = (e) => {
+      if (!dragging) return;
+      const dx = e.clientX - startX;
+      if (Math.abs(dx) > 3) moved = true;
+      track.scrollLeft = startScroll - dx;
+    };
+    const up = () => { dragging = false; track.classList.remove('is-dragging'); };
+    track.addEventListener('pointerdown', down);
+    track.addEventListener('pointermove', move);
+    track.addEventListener('pointerup', up);
+    track.addEventListener('pointerleave', up);
+    track.addEventListener('pointercancel', up);
+    track.addEventListener('dragstart', (e) => e.preventDefault());
+    // suppress the click that would otherwise fire on an element after a drag
+    track.addEventListener('click', (e) => { if (moved) { e.preventDefault(); e.stopPropagation(); } }, true);
+  })();
+
   /* ---------- reveal choreography ---------- */
   function setupScroll() {
     // hero exit
