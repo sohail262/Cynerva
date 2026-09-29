@@ -14,7 +14,6 @@
   const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
   const finePointer = matchMedia('(hover: hover) and (pointer: fine)').matches;
   const body = document.body;
-  const isMobile = () => innerWidth < 900;
 
   /* ---------- smooth scroll ---------- */
   let lenis = null;
@@ -135,7 +134,7 @@
   const chapters = $$('[data-chapter]');
   const rail = $('#rail');
   chapters.forEach((s, i) => {
-    const a = document.createElement('a'); a.href = '#' + s.id; a.setAttribute('data-link', ''); a.innerHTML = '<span>' + String(i).padStart(2, '0') + ' — ' + s.dataset.chapter + '</span>';
+    const a = document.createElement('a'); a.href = '#' + s.id; a.setAttribute('data-link', ''); a.innerHTML = '<span>' + String(i).padStart(2, '0') + ' ' + s.dataset.chapter + '</span>';
     rail.appendChild(a);
   });
   const railLinks = $$('a', rail);
@@ -370,41 +369,41 @@
     });
   });
 
-  /* ---------- journey (horizontal storytelling) ---------- */
-  const journey = $('#journey'), track = $('#track'), panels = $$('.panel'), jstage = $('.journey__stage');
+  /* ---------- capabilities (native horizontal swipe/scroll) ---------- */
+  const track = $('#track'), panels = $$('.panel');
   const jbar = $('#jbar'), jlabel = $('#jlabel');
-  const pNum = panels.map((p) => p.querySelector('.panel__num')), pSvg = panels.map((p) => p.querySelector('.panel__vis svg'));
-  let journeyLive = false, centers = [], lastLabel = '', lastBar = -1;
+  let centers = [], lastLabel = '', lastBar = -1;
   const measurePanels = () => { centers = panels.map((p) => p.offsetLeft + p.offsetWidth / 2); };
-  function updatePanels(progress) {
+  function updateJourney() {
     if (!centers.length) return;
-    const tx = gsap.getProperty(track, 'x'), vw = innerWidth, mob = isMobile();
+    const scrollLeft = track.scrollLeft, vw = track.clientWidth || innerWidth;
     let best = -1, bestD = 9;
     panels.forEach((p, i) => {
-      const off = (centers[i] + tx - vw / 2) / vw, a = Math.abs(off);
+      const off = (centers[i] - (scrollLeft + vw / 2)) / vw, a = Math.abs(off);
       if (a < bestD) { bestD = a; best = i; }
-      if (a > 1.3) return;
-      if (!mob) { pNum[i].style.transform = 'translate3d(' + (off * -60).toFixed(1) + 'px,0,0)'; pSvg[i].style.transform = 'translate3d(' + (off * 40).toFixed(1) + 'px,0,0)'; }
       const on = a < .3;
       if (on !== p.classList.contains('is-active')) p.classList.toggle('is-active', on);
       if (on) p.classList.add('is-seen');
     });
+    const max = track.scrollWidth - track.clientWidth;
+    const progress = max > 0 ? scrollLeft / max : 0;
     const b = Math.round(progress * 500);
     if (b !== lastBar) { lastBar = b; jbar.style.transform = 'scaleX(' + (b / 500) + ')'; }
-    const label = bestD < .3 ? String(best + 1).padStart(2, '0') + ' / 05 — ' + panels[best].dataset.title : '00 / 05';
+    const label = bestD < .3 ? String(best + 1).padStart(2, '0') + ' / 05 ' + panels[best].dataset.title : '00 / 05';
     if (label !== lastLabel) { lastLabel = label; jlabel.textContent = label; }
   }
   if (!reduce) {
-    const sizeJourney = () => { journey.style.height = (track.scrollWidth - innerWidth + jstage.offsetHeight) + 'px'; };
-    ScrollTrigger.addEventListener('refreshInit', sizeJourney); sizeJourney();
-    ScrollTrigger.addEventListener('refresh', measurePanels);
-    let jp = 0;
-    gsap.to(track, {
-      x: () => -(track.scrollWidth - innerWidth), ease: 'none',
-      scrollTrigger: { trigger: journey, start: 'top top', end: 'bottom bottom', scrub: .5, invalidateOnRefresh: true,
-        onToggle: (st_) => { journeyLive = st_.isActive; }, onUpdate: (st_) => { jp = st_.progress; } }
-    });
-    gsap.ticker.add(() => { if (journeyLive) updatePanels(jp); });
+    measurePanels();
+    let ticking = false;
+    track.addEventListener('scroll', () => {
+      if (ticking) return; ticking = true;
+      requestAnimationFrame(() => { updateJourney(); ticking = false; });
+    }, { passive: true });
+    addEventListener('resize', () => { measurePanels(); updateJourney(); });
+    addEventListener('load', () => { measurePanels(); updateJourney(); });
+    updateJourney();
+  } else {
+    panels.forEach((p) => p.classList.add('is-seen'));
   }
 
   /* ---------- reveal choreography ---------- */
